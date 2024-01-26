@@ -21,7 +21,7 @@ app.on('ready', () => {
     },
   });
 
-  mainWindow.loadURL('http://localhost:5173/');
+  mainWindow.loadURL('https://time-vault.netlify.app');
 
   let detectIsIdleIntervalId = null;
   let detectIsActiveIntervalId = null;
