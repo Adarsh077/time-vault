@@ -4,6 +4,8 @@ const initialState = {
   tasks: [
     { title: 'Tech: General', id: 1 },
     { title: 'Tech: Portal', id: 2 },
+    { title: 'Tech: Review', id: 7 },
+    { title: 'Tech: Deploy', id: 8 },
     { title: 'Tech: Buisness', id: 3 },
     { title: 'Tech: External', id: 4 },
     { title: 'Examcell', id: 5 },

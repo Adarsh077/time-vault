@@ -40,30 +40,37 @@ function App() {
     );
   };
 
-  // useEffect(() => {
-  //   if (!currentSession) return;
-  //   console.log('here');
-  //   setTimeout(() => {
-  //     restartCurrentSessionWithNewSessionType(
-  //       currentSession?.sessionType === RecordSessionType.IDLE
-  //         ? RecordSessionType.ACTIVE
-  //         : RecordSessionType.IDLE,
-  //     );
-  //   }, 1000 * 10);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [currentSession?.sessionType]);
-
   useEffect(() => {
-    if (!currentSession || !window.electron) return;
+    if (!window.electron) return;
+
     window.electron.receive('systemIdleStateChange', ({ isIdle }) => {
-      console.log({ isIdle });
+      if (!currentSession) return;
       restartCurrentSessionWithNewSessionType(
         isIdle ? RecordSessionType.IDLE : RecordSessionType.ACTIVE,
       );
     });
 
+    window.electron.receive('onClose', () => {
+      console.log(currentSession);
+      if (!currentSession) {
+        window.electron.send('closed');
+        return;
+      }
+      dispatch(
+        recordSessionAction({
+          taskId: currentSession.taskId,
+          sessionStartTime: currentSession.sessionStartTime,
+          sessionEndTime: DateTime.now().toString(),
+          sessionType: currentSession.sessionType,
+        }),
+      );
+      dispatch(stopSessionAction());
+      setTimeout(() => window.electron.send('closed'), 500);
+    });
+
     return () => {
       window.electron.removeAllListeners('systemIdleStateChange');
+      window.electron.removeAllListeners('onClose');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSession?.sessionType]);

@@ -9,7 +9,7 @@ const { app, BrowserWindow } = electron;
 const powerMonitor = electron.powerMonitor;
 
 app.on('ready', () => {
-  const mainWindow = new BrowserWindow({
+  let mainWindow = new BrowserWindow({
     title: 'Time Vault',
     autoHideMenuBar: true,
     width: 550,
@@ -21,7 +21,7 @@ app.on('ready', () => {
     },
   });
 
-  mainWindow.loadURL('https://time-vault.netlify.app');
+  mainWindow.loadURL('http://localhost:5173/');
 
   let detectIsIdleIntervalId = null;
   let detectIsActiveIntervalId = null;
@@ -60,13 +60,38 @@ app.on('ready', () => {
   };
 
   electron.ipcMain.on('startTimer', () => {
-    console.log(DateTime.now().toFormat('HH:mm:ss'), 'startTimer');
     clearIntervals();
     detectIsIdle();
   });
 
   electron.ipcMain.on('stopTimer', () => {
-    console.log(DateTime.now().toFormat('HH:mm:ss'), 'stopTimer');
     clearIntervals();
+  });
+
+  // app.on('will-quit', (e) => {
+  //   e.preventDefault();
+  //   mainWindow.webContents.send('onClose');
+  //   setTimeout(() => {
+  //     app.quit();
+  //   }, 1000);
+  // });
+
+  let status = 0;
+
+  mainWindow.on('close', (e) => {
+    if (status == 0) {
+      if (mainWindow) {
+        e.preventDefault();
+        mainWindow.webContents.send('onClose');
+      }
+    }
+  });
+
+  electron.ipcMain.on('closed', () => {
+    status = 1;
+    mainWindow = null;
+    if (process.platform !== 'darwin') {
+      app.quit();
+    }
   });
 });
